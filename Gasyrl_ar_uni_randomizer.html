@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5b1f32">
+<title>Ғасырлар үні — интерактивті өмір симуляторы</title>
+<style>
+:root{
+  --wine:#5b1f32;--wine2:#79364a;--cream:#f7f0e5;--paper:#fffaf2;
+  --sand:#e8d9c5;--gold:#b58b4b;--ink:#332a28;--muted:#786d66;
+  --line:#e6d8c8;--green:#647b62;--shadow:0 18px 50px rgba(48,27,28,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Georgia,"Times New Roman",serif;min-height:100vh}
+button{font:inherit}
+.page{min-height:100vh;padding:26px 16px 48px;background:
+ radial-gradient(ellipse at 10% 5%,rgba(181,139,75,.13),transparent 30%),
+ radial-gradient(ellipse at 90% 80%,rgba(91,31,50,.08),transparent 32%)}
+.wrap{max-width:1040px;margin:0 auto}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.brand{font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--wine);font-weight:700}
+.top-note{font:12px Arial,sans-serif;color:var(--muted)}
+.hero{background:linear-gradient(135deg,#4b1b2c,#79364a 58%,#9a694e);color:#fff8ef;border-radius:26px;padding:clamp(28px,6vw,64px);position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero:before,.hero:after{content:"";position:absolute;border:1px solid rgba(237,208,159,.25);border-radius:50%;width:310px;height:310px;right:-90px;top:-150px}
+.hero:after{width:210px;height:210px;right:55px;top:-105px}
+.eyebrow{font:11px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase;color:#e6c99a;margin-bottom:16px}
+h1{font-size:clamp(35px,7vw,68px);line-height:1.02;margin:0 0 12px;max-width:700px;font-weight:600}
+.subtitle{font-size:clamp(16px,2.5vw,22px);color:#f0dfcb;margin:0 0 24px}
+.hero-copy{font:15px/1.7 Arial,sans-serif;max-width:620px;color:#f8eee3}
+.hero-bottom{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:30px}
+.primary{border:0;background:#e7c58c;color:#482031;border-radius:999px;padding:14px 24px;font:700 14px Arial,sans-serif;cursor:pointer;transition:.2s}
+.primary:hover{transform:translateY(-2px);background:#f1d7a9}
+.secondary{border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff8ef;border-radius:999px;padding:13px 20px;font:13px Arial,sans-serif;cursor:pointer}
+.hero-mark{font:12px Arial,sans-serif;color:#ead8c4}
+.character-picker{margin-top:24px;max-width:620px;padding:17px 18px;border:1px solid rgba(255,255,255,.24);border-radius:18px;background:rgba(255,255,255,.08)}
+.picker-title{font:700 14px Arial,sans-serif;color:#fff8ef;margin-bottom:6px}
+.picker-help{font:12px/1.5 Arial,sans-serif;color:#ead8c4;margin-bottom:13px}
+.random-btn{border:1px solid rgba(255,255,255,.55);background:#fff8ef;color:var(--wine);border-radius:999px;padding:11px 17px;font:700 12px Arial,sans-serif;cursor:pointer}
+.random-btn:hover{background:#f1dfc8}
+.selected-character{margin-top:14px;padding:14px;border-radius:14px;background:rgba(255,248,239,.96);color:var(--ink);display:flex;gap:13px;align-items:center}
+.selected-character.hidden{display:none!important}
+.character-symbol{width:48px;height:48px;flex:none;border-radius:50%;display:grid;place-items:center;background:#ead8c4;color:var(--wine);font-size:24px}
+.selected-character strong{display:block;font:700 15px Arial,sans-serif;color:var(--wine);margin-bottom:3px}
+.selected-character .origin{font:11px Arial,sans-serif;color:var(--muted)}
+.selected-character p{font:12px/1.5 Arial,sans-serif;color:#5d514b;margin:6px 0}
+.selected-character .bonus{font:700 11px Arial,sans-serif;color:#647b62}
+.primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.rolling{animation:rollPulse .22s ease-in-out infinite alternate}
+@keyframes rollPulse{from{transform:scale(1)}to{transform:scale(1.035)}}
+.intro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:18px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 8px 24px rgba(50,30,25,.04)}
+.panel h2{font-size:21px;color:var(--wine);margin:0 0 12px}
+.panel p,.panel li{font:14px/1.7 Arial,sans-serif;color:#5d514b}
+.panel ul{padding-left:20px;margin:8px 0 0}
+.era-list{display:grid;gap:10px}
+.era-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.era-item:last-child{border:0}
+.era-num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#f0e4d3;color:var(--wine);font:700 12px Arial,sans-serif;flex:none}
+.era-name{font:700 13px Arial,sans-serif;color:var(--ink)}
+.era-desc{font:12px Arial,sans-serif;color:var(--muted);margin-top:3px}
+.hidden{display:none!important}
+.game-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.game-title{font-size:25px;color:var(--wine);margin:0}
+.small-btn{border:1px solid var(--line);background:#fffaf2;border-radius:999px;padding:9px 13px;font:12px Arial,sans-serif;color:var(--wine);cursor:pointer}
+.progress-wrap{background:#eadfD2;border-radius:99px;height:7px;overflow:hidden;margin:12px 0 20px}
+.progress{height:100%;background:linear-gradient(90deg,var(--wine),var(--gold));width:0;transition:width .35s}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:18px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
+.stat-top{display:flex;justify-content:space-between;gap:6px;align-items:center;font:11px Arial,sans-serif;color:var(--muted)}
+.stat-val{font:700 15px Arial,sans-serif;color:var(--wine)}
+.meter{height:5px;background:#eee5da;border-radius:9px;margin-top:8px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--gold);border-radius:9px;transition:width .3s}
+.scene{border-radius:24px;overflow:hidden;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow)}
+.scene-banner{min-height:185px;padding:25px 28px;position:relative;color:#fff8ef;display:flex;align-items:flex-end;overflow:hidden}
+.scene-banner:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(40,22,25,.78),rgba(40,22,25,.14)),var(--scene-bg);background-size:cover;background-position:center}
+.scene-banner:after{content:"";position:absolute;inset:0;opacity:.2;background-image:repeating-linear-gradient(135deg,transparent 0 16px,rgba(255,255,255,.12) 17px 18px)}
+.banner-content{position:relative;z-index:1}
+.era-kicker{font:11px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#efd6aa;margin-bottom:8px}
+.scene-banner h2{font-size:clamp(26px,4vw,38px);margin:0 0 6px;font-weight:600}
+.scene-banner p{font:13px Arial,sans-serif;color:#f2e5d7;margin:0}
+.scene-body{padding:clamp(20px,4vw,34px)}
+.character-line{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.character{font:13px Arial,sans-serif;color:var(--muted)}
+.age-pill{background:#f1e6d8;color:var(--wine);border-radius:999px;padding:8px 12px;font:700 11px Arial,sans-serif}
+.event-count{font:11px Arial,sans-serif;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase}
+.event-title{font-size:clamp(24px,4vw,34px);line-height:1.15;color:var(--wine);margin:8px 0 12px}
+.story{font:15px/1.8 Arial,sans-serif;color:#514741;max-width:780px;margin:0 0 18px}
+.literary-note{border-left:3px solid var(--gold);padding:10px 14px;background:#f8f1e7;border-radius:0 10px 10px 0;font:12px/1.6 Arial,sans-serif;color:#77695c;margin-bottom:23px}
+.choose-label{font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:11px}
+.choices{display:grid;gap:10px}
+.choice{width:100%;text-align:left;border:1px solid #e5d7c8;background:#fffdf8;border-radius:14px;padding:15px 17px;display:flex;gap:13px;align-items:flex-start;cursor:pointer;transition:.18s;color:var(--ink)}
+.choice:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 7px 18px rgba(75,40,35,.07)}
+.choice:disabled{cursor:default;opacity:.76;transform:none;box-shadow:none}
+.choice-letter{width:27px;height:27px;border-radius:50%;background:#f1e5d7;color:var(--wine);display:grid;place-items:center;font:700 12px Arial,sans-serif;flex:none}
+.choice-text{font:14px/1.5 Arial,sans-serif}
+.feedback{margin-top:17px;padding:16px 18px;border-radius:14px;background:#edf0e8;border:1px solid #d9e0d2}
+.feedback strong{display:block;color:#435b43;font:700 12px Arial,sans-serif;margin-bottom:6px}
+.feedback p{margin:0;font:13px/1.65 Arial,sans-serif;color:#4f5c4a}
+.delta{font:11px Arial,sans-serif;color:#65715e;margin-top:8px}
+.next-row{display:flex;justify-content:flex-end;margin-top:18px}
+.next{border:0;background:var(--wine);color:#fff8ef;border-radius:999px;padding:13px 22px;font:700 13px Arial,sans-serif;cursor:pointer}
+.next:hover{background:var(--wine2)}
+.footnote{font:11px/1.6 Arial,sans-serif;color:var(--muted);margin-top:15px;text-align:center}
+.result-hero{background:linear-gradient(135deg,#4b1b2c,#79364a);color:#fff8ef;border-radius:24px;padding:30px}
+.result-hero h2{font-size:clamp(30px,5vw,44px);margin:8px 0}
+.result-hero p{font:14px/1.7 Arial,sans-serif;color:#f0dfcb;max-width:700px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:17px}
+.result-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px}
+.result-card h3{font-size:20px;color:var(--wine);margin:0 0 12px}
+.result-card p{font:13px/1.7 Arial,sans-serif;color:#5d514b}
+.generation{padding:12px 0;border-bottom:1px solid var(--line)}
+.generation:last-child{border:0}
+.gen-title{font:700 12px Arial,sans-serif;color:var(--wine)}
+.gen-detail{font:12px/1.6 Arial,sans-serif;color:var(--muted);margin-top:4px}
+.compare{display:grid;gap:12px}
+.compare-row{display:grid;grid-template-columns:120px 1fr 34px;gap:8px;align-items:center;font:12px Arial,sans-serif}
+.compare-track{height:8px;border-radius:8px;background:#eee5da;overflow:hidden}
+.compare-track span{display:block;height:100%;background:var(--gold)}
+.end-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.end-actions .primary{background:var(--wine);color:white}
+.end-actions .secondary{border-color:var(--wine);color:var(--wine)}
+.disclaimer{font:11px/1.6 Arial,sans-serif;color:var(--muted);margin-top:14px}
+@media(max-width:720px){
+ .intro-grid,.result-grid{grid-template-columns:1fr}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .stats .stat:last-child{grid-column:span 2}
+ .scene-banner{min-height:160px}
+ .game-title{font-size:21px}
+ .compare-row{grid-template-columns:105px 1fr 28px}
+}
+@media(max-width:420px){
+ .page{padding:16px 10px 30px}
+ .stats{gap:6px}.stat{padding:9px}
+ .stat-top{font-size:10px}
+ .hero{border-radius:20px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="wrap">
+  <div class="topline">
+    <div class="brand">Әдеби интерактивті зертхана</div>
+    <div class="top-note">Қазақ әдебиеті • Өмір симуляторы</div>
+  </div>
+
+  <section id="intro">
+    <div class="hero">
+      <div class="eyebrow">Бір әулет • бес дәуір • бес тағдыр</div>
+      <h1>ҒАСЫРЛАР<br>ҮНІ</h1>
+      <p class="subtitle">Әйел тағдыры. Уақыт өзгерісі. Таңдау күші.</p>
+      <p class="hero-copy">Бес дәуірге саяхат жасап, бір әулеттің бес ұрпағының өмір жолын таңда. Әр шешімің келесі ұрпақтың мүмкіндігіне әсер етеді. Қазақ әдебиетіндегі әйел бейнесінің өзгерісін оқиғалар арқылы таны.</p>
+      <div class="character-picker">
+        <div class="picker-title">Алдымен кездейсоқ әдеби кейіпкерді таңда</div>
+        <div class="picker-help">Рандомайзер бір кейіпкерді таңдайды. Оның мінезі ойынның бастапқы көрсеткішіне әсер етеді.</div>
+        <button class="random-btn" id="randomCharacterBtn">🎲 КЕЙІПКЕРДІ КЕЗДЕЙСОҚ ТАҢДАУ</button>
+        <div class="selected-character hidden" id="selectedCharacter" aria-live="polite"></div>
+      </div>
+      <div class="hero-bottom">
+        <button class="primary" id="startBtn" disabled>Алдымен кейіпкерді таңда →</button>
+        <span class="hero-mark">15 оқиға · 45 таңдау · 5 ұрпақ</span>
+      </div>
+    </div>
+    <div class="intro-grid">
+      <div class="panel">
+        <h2>Ойын қалай өтеді?</h2>
+        <p>Сен әр дәуірде өмір сүретін ойдан құрастырылған кейіпкердің орнына шешім қабылдайсың. Әр оқиғада үш жолдың бірін таңдайсың. Таңдауың кейіпкердің біліміне, еркіндігіне, қоғамдық ықпалына, жақындарының қолдауына және рухани беріктігіне әсер етеді.</p>
+        <ul>
+          <li>Әр дәуірде үш оқиға бар.</li>
+          <li>Әр оқиғада дәл үш таңдау ұсынылады.</li>
+          <li>Бір ұрпақтың тәжірибесі келесі ұрпаққа мұра болады.</li>
+          <li>Соңында әулет тарихы мен жеке қорытындың көрсетіледі.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h2>Бес дәуірге саяхат</h2>
+        <div class="era-list">
+          <div class="era-item"><div class="era-num">01</div><div><div class="era-name">Эпостық дәстүр</div><div class="era-desc">Қыз Жібек пен Баян сұлу бейнелерінен шабыт</div></div></div>
+          <div class="era-item"><div class="era-num">02</div><div><div class="era-name">XIX ғасыр</div><div class="era-desc">Сара Тастанбекқызы және айтыс өнері</div></div></div>
+          <div class="era-item"><div class="era-num">03</div><div><div class="era-name">XX ғасырдың басы</div><div class="era-desc">Жамал, Қамар және Ақбілек тағдыры</div></div></div>
+          <div class="era-item"><div class="era-num">04</div><div><div class="era-name">XX ғасырдың екінші жартысы</div><div class="era-desc">Ұлпан мен Қамажай бейнелерінің сабақтастығы</div></div></div>
+          <div class="era-item"><div class="era-num">05</div><div><div class="era-name">XXI ғасыр</div><div class="era-desc">Қазіргі әйелдің таңдауы мен мүмкіндігі</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="footnote">Телефонда ойнау үшін файлды жүктеп алып, «Файлдар» қолданбасынан Safari арқылы аш. ChatGPT ішіндегі файлды алдын ала қарау терезесінде батырмалар жұмыс істемеуі мүмкін.</p>
+    <p class="footnote">Ескерту: ойын кейіпкерлері — әдеби образдар мен тарихи-әлеуметтік жағдайлардан шабыт алған жинақталған көркем тұлғалар. Олардың оқиғалары нақты шығармалардың сюжетін қайталамайды.</p>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="game-head">
+      <h2 class="game-title">Әулет шежіресі</h2>
+      <button class="small-btn" id="restartTop">Ойынды қайта бастау ↻</button>
+    </div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+    <div class="stats" id="stats"></div>
+    <div class="scene">
+      <div class="scene-banner" id="banner">
+        <div class="banner-content">
+          <div class="era-kicker" id="eraKicker"></div>
+          <h2 id="eraTitle"></h2>
+          <p id="eraSubtitle"></p>
+        </div>
+      </div>
+      <div class="scene-body">
+        <div class="character-line">
+          <div class="character" id="character"></div>
+          <div class="age-pill" id="age"></div>
+        </div>
+        <div class="event-count" id="eventCount"></div>
+        <h2 class="event-title" id="eventTitle"></h2>
+        <p class="story" id="story"></p>
+        <div class="literary-note" id="literaryNote"></div>
+        <div class="choose-label">Қандай шешім қабылдайсың?</div>
+        <div class="choices" id="choices"></div>
+        <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+        <div class="next-row"><button class="next hidden" id="nextBtn">Келесі оқиға →</button></div>
+      </div>
+    </div>
+    <p class="footnote">Әр таңдаудың өз салдары бар. Бір ғана мінсіз жол жоқ — маңыздысы, өз шешіміңнің мәнін түсіну.</p>
+  </section>
+
+  <section id="results" class="hidden">
+    <div class="result-hero">
+      <div class="eyebrow">Сенің таңдауларыңның нәтижесі</div>
+      <h2 id="resultTitle">Өз үнін тапқан тұлға</h2>
+      <p id="resultText"></p>
+    </div>
+    <div class="result-grid">
+      <div class="result-card">
+        <h3>Бес ұрпақтың шежіресі</h3>
+        <div id="lineage"></div>
+      </div>
+      <div class="result-card">
+        <h3>Әулеттің бүгінгі мұрасы</h3>
+        <p id="legacyText"></p>
+        <div class="compare" id="finalStats"></div>
+      </div>
+      <div class="result-card" style="grid-column:1/-1">
+        <h3>Әйел бейнесінің өзгеру жолы</h3>
+        <p>Ойын барысында бес дәуірдегі әйел бейнесі әртүрлі қырынан көрінді. Төмендегі салыстыру — ойын ішіндегі таңдаулардың қорытындысы, тарихи қоғамдағы әйелдердің нақты статистикасы емес.</p>
+        <div class="generation"><div class="gen-title">Эпостық дәстүр</div><div class="gen-detail">Әйел бейнесі сұлулық, ақыл-парасат, адалдық, сезім және дәстүр ұғымдарымен сабақтасты.</div></div>
+        <div class="generation"><div class="gen-title">XIX ғасыр</div><div class="gen-detail">Ақындық өнер мен айтыс әйелдің сөз арқылы өз ойын білдіру мүмкіндігін танытты.</div></div>
+        <div class="generation"><div class="gen-title">XX ғасырдың басы</div><div class="gen-detail">Әдебиетте әлеуметтік теңсіздік, білімге ұмтылу және жеке таңдау мәселелері айқын көтерілді.</div></div>
+        <div class="generation"><div class="gen-title">XX ғасырдың екінші жартысы</div><div class="gen-detail">Әйелдің қоғамдық жауапкершілігі, көшбасшылығы және отбасы мен жеке мақсаты арасындағы байланыс кеңірек суреттелді.</div></div>
+        <div class="generation"><div class="gen-title">XXI ғасыр</div><div class="gen-detail">Қазіргі әйел бейнесі білім, кәсіби даму, шығармашылық, дербестік және қоғамдық белсенділікпен толыға түсті.</div></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="primary" id="againBtn">Қайта ойнау ↻</button>
+      <button class="secondary" id="printBtn">Нәтижені басып шығару</button>
+    </div>
+    <p class="disclaimer">Ғылыми ескерту: эпостық жырлардың қалыптасуын нақты бір ғасырға телуге болмайды. «Ұлпан» романы мен «Әпке» драмасы да өзара бөлек кезеңдерде жазылған. Ойын дәуірлерді әдеби бейнелердің даму желісін түсіндіру үшін топтастырады.</p>
+  </section>
+</div>
+</div>
+
+<script>
+const eras = [
+ {title:"Эпостық дәстүр",period:"Ауыз әдебиетінің көркем әлемі",sub:"Дәстүр, сезім және жеке таңдау",bg:"linear-gradient(120deg,#593d31,#b28b62)",character:"Айсұлу",age:16,
+ events:[
+  {title:"Өз таңдауыңды жасау",age:16,story:"Сен — дәстүр мен салттың ықпалы күшті ортада өмір сүріп жатқан жас қызсың. Өміріңе қатысты маңызды шешім қабылдайтын уақыт келді. Алайда сенің де өз арманың мен қалауың бар. Өз ойыңды қалай жеткізесің?",note:"Әдеби үндестік: «Қыз Жібек» пен «Қозы Көрпеш – Баян сұлу» жырларындағы әйел кейіпкерлердің сезімі, таңдауы және адамдық қасиеттері. Бұл — нақты сюжетті қайталау емес, эпостық дәстүрден алынған көркем жағдай.",
+  choices:[
+   {text:"Өз пікіріңді ашық айтып, таңдауыңды қорғау.",effect:{freedom:10,influence:5,support:-4,resilience:5},out:"Сен өз қалауыңды білдірдің. Бұл ішкі сеніміңді күшейтті, бірақ кейбір адамдардың қарсылығына тап болуың мүмкін."},
+   {text:"Үлкендердің ақылын тыңдап, дәстүрді ескеру.",effect:{support:10,resilience:3,freedom:-3},out:"Отбасыңның қолдауын сақтадың. Дәстүрмен санасу ортақ түсіністікке жол ашты, алайда жеке қалауыңды кейінге қалдырдың."},
+   {text:"Екі жақты да тыңдап, ортақ шешім іздеу.",effect:{support:6,freedom:4,influence:3},out:"Сен келісімге келудің жолын таптың. Өз пікіріңді сақтай отырып, жақындарыңмен байланысты нығайттың."}
+  ]},
+  {title:"Өнер ме, әлде міндет пе?",age:19,story:"Сенің ән айтуға, жыр тыңдауға және өнерге қызығушылығың бар. Бірақ күнделікті міндеттерің де жеткілікті. Өнерге уақыт бөлу үшін қандай жолды таңдайсың?",note:"Әдеби үндестік: эпостық жырларда әйел кейіпкерлердің сұлулығымен қатар ақыл-парасаты, тапқырлығы мен өнерге жақындығы да көрінеді.",
+  choices:[
+   {text:"Өнеріңді дамытып, жыр мен ән үйрену.",effect:{influence:7,resilience:5,freedom:3},out:"Өнер саған өзіңді танытуға мүмкіндік берді. Сенің қабілетіңді айналаңдағы адамдар байқай бастады."},
+   {text:"Отбасыңа көмектесіп, дәстүрді жалғастыру.",effect:{support:8,resilience:6,education:-1},out:"Отбасыңмен байланысың нығайды. Міндеттерді атқару жауапкершілігіңді арттырды, бірақ өнерге бөлетін уақытың азайды."},
+   {text:"Өз шығармаларыңды жазып, жаңа бағыт қалыптастыру.",effect:{education:4,influence:8,freedom:4},out:"Сен өз ойыңды жазба арқылы жеткізуді бастадың. Бұл кейінгі ұрпаққа рухани мұра қалдырудың алғашқы қадамы болды."}
+  ]},
+  {title:"Қоғам алдындағы сөз",age:25,story:"Ауылда маңызды жиын өтеді. Сенің де айтар ойың бар, бірақ қыз баланың қоғамдық ортада сөйлеу мүмкіндігі шектеулі. Өз даусыңды қалай жеткізесің?",note:"Әдеби үндестік: эпостық әйел образдары арқылы ар-намыс, ақыл, уәде мен таңдаудың маңызы танылады.",
+  choices:[
+   {text:"Өз ойыңды көпшілік алдында жеткізу.",effect:{influence:10,freedom:7,support:-3},out:"Сен батылдық танытып, пікіріңді ашық айттың. Кейбірі сені қолдады, енді бірі бұл қадамыңа күмәнмен қарады."},
+   {text:"Үлкендердің көмегімен пікіріңді білдіру.",effect:{support:8,influence:4,freedom:1},out:"Сен өз ойыңды сенімді адамдар арқылы жеткіздің. Қолдау таптың және ортақ әңгімеге араласудың жолын аштың."},
+   {text:"Ойыңды жыр мен әңгіме арқылы кейінгі ұрпаққа қалдыру.",effect:{education:4,influence:6,resilience:7},out:"Сенің сөзің жазба мен ауызша әңгіме арқылы сақталды. Бұл әулеттің рухани мұрасына айналды."}
+  ]}
+ ]},
+ {title:"XIX ғасыр",period:"XIX ғасырдағы сөз өнері",sub:"Айтыс, ақындық және қоғамдық үн",bg:"linear-gradient(120deg,#51382e,#98724e)",character:"Мәрия",age:17,
+ events:[
+  {title:"Айтысқа шақыру",age:17,story:"Сенің ақындық қабілетің ел арасында таныла бастады. Бір күні сені үлкен айтысқа қатысуға шақырады. Бұл — өнеріңді танытып, өз ойыңды көпшілікке жеткізудің мүмкіндігі.",note:"Әдеби негіз: Сара Тастанбекқызы — XIX ғасырдағы белгілі ақын. Біржан мен Сара айтысы әйелдің сөз өнеріндегі орнын танытатын маңызды мұралардың бірі.",
+  choices:[
+   {text:"Айтысқа қатысып, өнеріңді көпшілікке көрсету.",effect:{influence:10,freedom:6,resilience:5,support:-2},out:"Сен айтысқа қатысып, тапқырлығың мен ақындық қабілетіңді көрсеттің. Өнерің танылды, бірақ жұрт назарында болу жауапкершілікті арттырды."},
+   {text:"Алдымен тәжірибелі ақындардан тәлім алу.",effect:{education:8,support:5,resilience:3},out:"Ұстаздардан үйренгенің сөздік қорың мен ой жүйелеу қабілетіңді дамытты. Өнер жолына сенімдірек қадам жасадың."},
+   {text:"Өз шығармаларыңды жазып, жеке өнер жолыңды қалыптастыру.",effect:{education:6,freedom:5,influence:6},out:"Сен жеке шығармашылық бағытыңды қалыптастыра бастадың. Өлеңдерің арқылы өз көзқарасыңды жеткіздің."}
+  ]},
+  {title:"Қоғамның пікірі",age:21,story:"Шығармашылығың туралы әртүрлі пікірлер айтыла бастады. Кейбір адамдар әйел адамның көпшілік алдында сөйлеуін құптамайды. Сен өз ұстанымыңды қалай қорғайсың?",note:"Әдеби байланыс: Біржан мен Сара айтысы ақындық шеберлікпен қатар әйелдің қоғамдағы орны туралы ой қозғауға мүмкіндік береді.",
+  choices:[
+   {text:"Өлеңмен жауап беріп, өз ұстанымыңды қорғау.",effect:{influence:9,freedom:6,resilience:5},out:"Сен қарсы пікірге өнер тілімен жауап бердің. Өлеңің сенің ішкі ұстанымыңды айқын көрсетті."},
+   {text:"Қоғаммен сұхбаттасып, көзқарасты өзгертуге тырысу.",effect:{support:7,influence:5,education:3},out:"Сұхбат арқылы кейбір адамдардың көзқарасын түсіндің. Ортақ тіл табу қоғамдық қолдауыңды арттырды."},
+   {text:"Шығармашылығыңды жалғастырып, пікірлерге мән бермеу.",effect:{freedom:7,resilience:8,influence:3},out:"Сен өз жолыңнан таймадың. Ішкі беріктігің артып, шығармашылыққа көбірек көңіл бөлдің."}
+  ]},
+  {title:"Болашақ жолың",age:27,story:"Алдыңда бірнеше мүмкіндік тұр. Ақындық өнерді жалғастыруға, отбасыңа көңіл бөлуге немесе өнеріңді басқа қыздарға жол көрсетуге пайдалануға болады. Қай бағытты таңдайсың?",note:"Әдеби ой: Сара бейнесі әйел ақынның өнердегі орнын, сөз еркіндігі мен шығармашылық қабілетін талқылауға негіз болады.",
+  choices:[
+   {text:"Ақындық өнерді өмірлік жолың ету.",effect:{influence:9,freedom:6,education:4},out:"Өнер сенің өмірлік мұраңа айналды. Сенің шығармашылығың кейінгі буынға шабыт берді."},
+   {text:"Отбасы мен қоғамдық міндеттерге басымдық беру.",effect:{support:10,resilience:5,freedom:-2},out:"Сен отбасың мен ортаңның сенімін ақтауға күш салдың. Қоғамдағы байланыстарың нығайды."},
+   {text:"Өнеріңді пайдаланып, басқа қыздарға үлгі болу.",effect:{influence:10,education:6,support:5},out:"Сен өз тәжірибеңмен бөлісіп, өзге қыздардың қабілетін дамытуға көмектестің. Өнерің қоғамдық мәнге ие болды."}
+  ]}
+ ]},
+ {title:"XX ғасырдың басы",period:"Қоғамдық өзгерістер кезеңі",sub:"Білім, теңсіздік және жеке таңдау",bg:"linear-gradient(120deg,#4b3530,#a17a5b)",character:"Күләш",age:16,
+ events:[
+  {title:"Тағдыр таңдауына араласу",age:16,story:"Сен өмірлік таңдауыңды өзің жасағың келеді. Алайда қоғамның ескі көзқарастары мен отбасы үміті саған қысым жасайды. Өз болашағың туралы шешімді қалай қабылдайсың?",note:"Әдеби негіз: Міржақып Дулатұлының «Бақытсыз Жамал» романы мен Сұлтанмахмұт Торайғыровтың «Қамар сұлу» шығармасы әйел тағдыры мен әлеуметтік теңсіздік мәселелерін көтереді.",
+  choices:[
+   {text:"Өз қалауыңды ашық білдіріп, қолдау іздеу.",effect:{freedom:9,resilience:6,support:-3},out:"Сен өз таңдауыңды қорғауға қадам жасадың. Бұл еркіндігіңді күшейтті, бірақ жақындарыңмен түсінісуге уақыт қажет болды."},
+   {text:"Сенімді адамға хат жазып, жағдайыңды түсіндіру.",effect:{education:4,support:6,freedom:4},out:"Хат арқылы ойыңды жүйелі жеткіздің. Сенімді адамның қолдауы жаңа мүмкіндікке жол ашты."},
+   {text:"Отбасыңмен келіссөз жүргізіп, ортақ шешімге келу.",effect:{support:9,resilience:4,freedom:3},out:"Сен сабырмен сөйлесіп, өз ойыңды түсіндірдің. Келісімге келу жақындарыңмен байланысты сақтауға көмектесті."}
+  ]},
+  {title:"Білімге бастар жол",age:19,story:"Сен білім алуды армандайсың. Бірақ қыз балалардың оқуына мүмкіндік әрдайым бола бермейді. Алдыңда аз да болса ашылған жолды қалай пайдаланасың?",note:"Әдеби байланыс: «Ақбілек» романында әйел тағдыры, қоғамдық өзгерістер және кейіпкердің жаңа өмірге бейімделуі суреттеледі. Шығарма Жүсіпбек Аймауытовқа тиесілі.",
+  choices:[
+   {text:"Мектепке түсіп, білім алуға ұмтылу.",effect:{education:12,freedom:4,influence:3},out:"Оқу сенің дүниетанымыңды кеңейтті. Жаңа білім өз мүмкіндігіңді бағалауға көмектесті."},
+   {text:"Өз бетіңше кітап оқып, сауатыңды жетілдіру.",effect:{education:8,resilience:6,freedom:2},out:"Өз бетіңше оқу арқылы білім қорыңды арттырдың. Табандылығың жаңа жолдарды іздеуге үйретті."},
+   {text:"Басқа қыздармен бірге оқу үйірмесін ұйымдастыру.",effect:{education:7,influence:8,support:6},out:"Бірге оқу ортақ мақсат қалыптастырды. Сен білімді жеке жетістік қана емес, қоғамдық мүмкіндік ретінде қарастыра бастадың."}
+  ]},
+  {title:"Жаңа өмірге қадам",age:26,story:"Өміріңде күрделі кезеңдер болды. Енді алға қарай қадам жасап, өз болашағыңды қалыптастыруың қажет. Қандай жолды таңдайсың?",note:"Әдеби ой: XX ғасыр басындағы прозада әйелдің тағдыры жеке адамның мәселесі ғана емес, қоғамдағы өзгерістердің көрсеткіші ретінде бейнеленді.",
+  choices:[
+   {text:"Жақындарыңның қолдауына сүйеніп, жаңа бастама жасау.",effect:{support:10,resilience:5,freedom:3},out:"Жақындарыңның көмегі сеніміңді арттырды. Сен жаңа өмірге біртіндеп бейімделдің."},
+   {text:"Білім алып, кәсіби дамуға ұмтылу.",effect:{education:10,freedom:6,influence:4},out:"Білім мен еңбек саған дербес болашақ құруға мүмкіндік берді. Өз қабілетіңе сенімің артты."},
+   {text:"Өз тәжірибеңді шығарма арқылы жеткізу.",effect:{influence:9,resilience:8,education:4},out:"Өмірлік тәжірибеңді сөз өнеріне айналдырдың. Шығармаң өзгелерге ой салатын үнге айналды."}
+  ]}
+ ]},
+ {title:"XX ғасырдың екінші жартысы",period:"Қоғамдық өмір мен жаңа міндеттер",sub:"Жауапкершілік, отбасы және көшбасшылық",bg:"linear-gradient(120deg,#35433c,#8b8765)",character:"Зере",age:18,
+ events:[
+  {title:"Ел ісіне араласу",age:18,story:"Сенің ақылың мен ұйымдастырушылық қабілетіңді байқаған ауыл тұрғындары маңызды қоғамдық іске араласуды ұсынады. Қандай рөл атқарғың келеді?",note:"Әдеби негіз: Ғабит Мүсіреповтің «Ұлпан» романындағы Ұлпан бейнесі әйелдің ел ішіндегі беделі мен ұйымдастырушылық қабілетін танытады.",
+  choices:[
+   {text:"Қоғамдық басшылықты өз қолыңа алу.",effect:{influence:10,freedom:5,resilience:5,support:-2},out:"Сен жауапкершіліктен қашпадың. Басшылық тәжірибең қоғамдық ықпалыңды арттырды."},
+   {text:"Халықпен ақылдасып, бірлескен шешім қабылдау.",effect:{support:9,influence:6,education:3},out:"Ортақ пікірге сүйену адамдардың сенімін нығайтты. Сен ынтымақтастықтың маңызын көрсеттің."},
+   {text:"Ауылдағы білім мен мәдениетті дамытуға күш салу.",effect:{education:8,influence:8,support:5},out:"Білім мен мәдениетке қосқан үлесің ұзақ мерзімді өзгеріске негіз болды. Сен қоғамның дамуына ықпал еттің."}
+  ]},
+  {title:"Отбасы мен арман",age:23,story:"Отбасың саған сенім артады. Сонымен қатар сенің де жеке армандарың мен кәсіби мақсаттарың бар. Екеуінің арасындағы тепе-теңдікті қалай сақтайсың?",note:"Әдеби байланыс: Дулат Исабековтің «Әпке» драмасындағы Қамажай бейнесі отбасы алдындағы жауапкершілік пен жеке өмір арасындағы күрделі байланысты ашады.",
+  choices:[
+   {text:"Отбасылық міндеттерді жақындарыңмен бөлісу.",effect:{support:9,freedom:5,resilience:4},out:"Міндеттерді бөлісу отбасы мүшелерінің жауапкершілігін арттырды. Сен өз мақсатыңа да уақыт таба бастадың."},
+   {text:"Білім мен мансапқа басымдық беру.",effect:{education:9,freedom:7,influence:4,support:-2},out:"Сен кәсіби дамуыңа күш салдың. Жаңа мүмкіндіктер ашылды, бірақ жақындарыңмен ортақ уақытты жоспарлау қажет болды."},
+   {text:"Отбасы мен жеке мақсаттарыңды қатар алып жүрудің жолын табу.",effect:{support:6,freedom:5,education:4,resilience:5},out:"Сен өз қажеттіліктерің мен отбасыңның үмітін үйлестіруге тырыстың. Бұл икемділік пен сабырды талап етті."}
+  ]},
+  {title:"Өз орныңды табу",age:29,story:"Сен болашағыңды қалыптастыру үшін мамандық таңдауың керек. Қай салада өз қабілетіңді толық аша аласың?",note:"Әдеби ой: Ұлпан мен Қамажай — әртүрлі көркемдік кезеңдер мен жанрларда жасалған бейнелер. Оларды салыстыру әйелдің қоғамдық және отбасылық рөлдерінің көпқырлылығын көрсетеді.",
+  choices:[
+   {text:"Ұстаз немесе зерттеуші болу.",effect:{education:10,influence:5,support:4},out:"Білім тарату мен зерттеу сенің өмірлік бағытыңа айналды. Сен келесі буынның дамуына үлес қостың."},
+   {text:"Жазушы немесе өнер адамы болу.",effect:{influence:9,freedom:6,resilience:5},out:"Шығармашылық арқылы өз дәуіріңнің үнін жеткіздің. Өнер сенің жеке болмысыңды танытты."},
+   {text:"Қоғамдық көшбасшы болу.",effect:{influence:10,freedom:5,support:4,resilience:4},out:"Сен қоғамдық мәселелерді шешуге белсене араластың. Адамдарды ортақ мақсатқа жұмылдыру қабілетің артты."}
+  ]}
+ ]},
+ {title:"XXI ғасыр",period:"Қазіргі заман",sub:"Дербестік, білім және жаңа мүмкіндіктер",bg:"linear-gradient(120deg,#34434a,#8c6e68)",character:"Аяулым",age:17,
+ events:[
+  {title:"Болашағың — өз қолыңда",age:17,story:"Сен заманауи қоғамда өмір сүресің. Алдыңда білім алу, шығармашылықпен айналысу, кәсіп бастау және қоғамдық іске араласу сияқты көптеген мүмкіндік бар. Қай бағытты таңдайсың?",note:"Әдеби бағдар: қазіргі қазақ әдебиетіндегі әйел бейнесін талдағанда кейіпкердің ішкі әлеміне, кәсіби мақсатына, дербестігіне және қоғаммен байланысына назар аудар.",
+  choices:[
+   {text:"Жоғары білім алып, кәсіби маман болу.",effect:{education:10,freedom:5,influence:3},out:"Білім сенің кәсіби мүмкіндіктеріңді кеңейтті. Сен өз салаңда дамуға нақты қадам жасадың."},
+   {text:"Өз жобаңа немесе жеке кәсібіңе бастама жасау.",effect:{freedom:8,influence:6,resilience:6,education:3},out:"Жаңа бастама тәуекел мен табандылықты талап етті. Сен идеяңды іске асырудың алғашқы тәжірибесін жинадың."},
+   {text:"Қоғамдық жұмыстарға араласып, көшбасшылық қабілетіңді дамыту.",effect:{influence:9,support:6,freedom:4},out:"Қоғамдық белсенділік арқылы жаңа адамдармен танысып, ортақ мәселелерді шешуге үлес қостың."}
+  ]},
+  {title:"Сенің дауысың",age:21,story:"Сен қоғамдағы маңызды мәселелер туралы өз пікіріңді жеткізгің келеді. Қазіргі заманда сөз айтуға мүмкіндік көп, бірақ жауапкершілік те жоғары. Қай тәсілді таңдайсың?",note:"Әдеби ой: қазіргі кезеңде әйел бейнесі бір ғана қалыппен шектелмейді; ол білім, еңбек, шығармашылық, отбасы және қоғамдық белсенділік қырларымен ашылады.",
+  choices:[
+   {text:"Әлеуметтік желіде ақпараттық жоба ашу.",effect:{influence:8,education:4,freedom:5},out:"Сен цифрлық кеңістікті пайдалы ақпарат таратуға қолдандың. Жобаңа қызығушылық танытқандар көбейді."},
+   {text:"Әйел тағдыры туралы шығарма жазу.",effect:{education:5,influence:9,resilience:5},out:"Көркем шығарма арқылы сен адам тағдырын тереңірек түсіндіруге мүмкіндік алдың. Сөз өнері қоғамдық ойға ықпал етті."},
+   {text:"Қоғамдық пікірталас ұйымдастыру.",effect:{support:7,influence:8,freedom:4},out:"Пікірталас түрлі көзқарасты тоғыстырды. Сен тыңдау мен дәлелдеудің маңызын көрсеттің."}
+  ]},
+  {title:"Тарихты кім жазады?",age:25,story:"Сен қазақ әдебиетіндегі әйел бейнесін зерттеп жүрген жас зерттеушісің. Енді өз еңбегің арқылы келесі ұрпаққа мұра қалдырғың келеді. Қандай жобаны таңдайсың?",note:"Ғылыми байланыс: ойынның негізгі тақырыбы — қазақ әдебиетіндегі әйел бейнесінің эволюциясы. Бұл соңғы таңдау ойыншыға зерттеу нәтижесін шығармашылық түрде ұсынуға мүмкіндік береді.",
+  choices:[
+   {text:"Қазақ әйелдерінің өмір жолы туралы деректі жоба жасау.",effect:{education:8,influence:8,resilience:4},out:"Деректер мен сұхбаттар арқылы сен ұмыт қалған дауыстарды танытуға үлес қостың."},
+   {text:"Әдеби кейіпкерлердің бейнесін салыстыратын көрме ұйымдастыру.",effect:{education:7,influence:7,support:6},out:"Көрме арқылы әр дәуірдің әйел бейнесін салыстырып, әдеби мұраны көпшілікке түсінікті етіп ұсындың."},
+   {text:"Қазақ әдебиетіндегі әйел бейнесі туралы өз шығармаңды жазу.",effect:{freedom:7,influence:10,education:5,resilience:5},out:"Сен зерттеу мен шығармашылықты біріктірдің. Өз көзқарасыңды келесі ұрпаққа жеткізетін еңбек қалдырдың."}
+  ]}
+ ]}
+];
+
+const playableCharacters=[
+ {name:"Қыз Жібек",source:"«Қыз Жібек» жыры · эпостық дәстүр",symbol:"✿",description:"Сезімталдық, талғампаздық және өз таңдауына адалдықты бейнелейді.",bonus:{key:"freedom",value:7},bonusLabel:"Жеке еркіндік +7"},
+ {name:"Баян сұлу",source:"«Қозы Көрпеш – Баян сұлу» жыры · эпостық дәстүр",symbol:"❀",description:"Махаббатқа беріктік пен рухани табандылықты танытады.",bonus:{key:"resilience",value:7},bonusLabel:"Рухани беріктік +7"},
+ {name:"Сара",source:"Біржан мен Сара айтысы · XIX ғасыр",symbol:"♫",description:"Сөз өнері, тапқырлық және өз ойын ашық жеткізу қабілетін білдіреді.",bonus:{key:"influence",value:7},bonusLabel:"Қоғамдық ықпал +7"},
+ {name:"Жамал",source:"«Бақытсыз Жамал» · XX ғасырдың басы",symbol:"✧",description:"Білімге ұмтылу мен өз тағдырын өзі шешуге деген талпынысты көрсетеді.",bonus:{key:"education",value:7},bonusLabel:"Білім +7"},
+ {name:"Қамар",source:"«Қамар сұлу» · XX ғасырдың басы",symbol:"❖",description:"Әділетсіздікке қарсы ішкі қарсылық пен рухани беріктікті бейнелейді.",bonus:{key:"resilience",value:6},bonusLabel:"Рухани беріктік +6"},
+ {name:"Ақбілек",source:"«Ақбілек» романы · XX ғасырдың басы",symbol:"❋",description:"Қиындықты еңсеру, білім алу және жаңа өмірге бейімделу идеясын танытады.",bonus:{key:"education",value:5},bonusLabel:"Білім +5, рухани беріктік +2",extraBonus:{key:"resilience",value:2}},
+ {name:"Ұлпан",source:"«Ұлпан» романы · XIX ғасыр оқиғалары",symbol:"❦",description:"Парасат, ұйымдастырушылық және ел ісіне араласу қасиеттерін көрсетеді.",bonus:{key:"influence",value:5},bonusLabel:"Қоғамдық ықпал +5, қолдау +2",extraBonus:{key:"support",value:2}},
+ {name:"Қамажай",source:"«Әпке» драмасы · XX ғасыр",symbol:"♡",description:"Жақындарына қамқорлық пен жауапкершілікті бейнелейді.",bonus:{key:"support",value:7},bonusLabel:"Жақындарының қолдауы +7"}
+];
+let selectedCharacter=null;
+function chooseRandomCharacter(){
+ const button=$("randomCharacterBtn");
+ button.classList.add("rolling");button.disabled=true;
+ let ticks=0;
+ const preview=setInterval(()=>{
+  const temp=playableCharacters[Math.floor(Math.random()*playableCharacters.length)];
+  button.textContent=`🎲 ${temp.name.toUpperCase()}...`;
+  ticks++;
+  if(ticks>=9){
+   clearInterval(preview);
+   selectedCharacter=playableCharacters[Math.floor(Math.random()*playableCharacters.length)];
+   $("selectedCharacter").innerHTML=`<div class="character-symbol">${selectedCharacter.symbol}</div><div><strong>${selectedCharacter.name}</strong><div class="origin">${selectedCharacter.source}</div><p>${selectedCharacter.description}</p><div class="bonus">Бастапқы бонус: ${selectedCharacter.bonusLabel}</div></div>`;
+   show("selectedCharacter");
+   button.classList.remove("rolling");button.disabled=false;
+   button.textContent="🎲 ҚАЙТА КЕЗДЕЙСОҚ ТАҢДАУ";
+   $("startBtn").disabled=false;
+   $("startBtn").textContent=`${selectedCharacter.name} кейіпкерімен бастау →`;
+  }
+ },90);
+}
+
+const statInfo=[
+ {key:"education",name:"Білім",icon:"✦"},
+ {key:"freedom",name:"Еркіндік",icon:"◇"},
+ {key:"influence",name:"Ықпал",icon:"❖"},
+ {key:"support",name:"Қолдау",icon:"♡"},
+ {key:"resilience",name:"Рухани беріктік",icon:"✧"}
+];
+const base={education:24,freedom:24,influence:18,support:52,resilience:42};
+let stats={...base},eraIndex=0,eventIndex=0,age=16,answered=false,history=[],generationRecords=[];
+function resetStatsForCharacter(){
+ stats={...base};
+ if(selectedCharacter){
+  stats[selectedCharacter.bonus.key]=clamp(stats[selectedCharacter.bonus.key]+selectedCharacter.bonus.value);
+  if(selectedCharacter.extraBonus)stats[selectedCharacter.extraBonus.key]=clamp(stats[selectedCharacter.extraBonus.key]+selectedCharacter.extraBonus.value);
+ }
+}
+
+const $=id=>document.getElementById(id);
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+function show(id){$(id).classList.remove("hidden")}
+function hide(id){$(id).classList.add("hidden")}
+function renderStats(){
+ $("stats").innerHTML=statInfo.map(s=>`<div class="stat"><div class="stat-top"><span>${s.icon} ${s.name}</span><span class="stat-val">${stats[s.key]}</span></div><div class="meter"><span style="width:${stats[s.key]}%"></span></div></div>`).join("");
+}
+function render(){
+ const era=eras[eraIndex],ev=era.events[eventIndex],total=15,done=eraIndex*3+eventIndex;
+ $("progress").style.width=(done/total*100)+"%";
+ $("eraKicker").textContent=`${era.period} · ${eraIndex+1}/5`;
+ $("eraTitle").textContent=era.title;
+ $("eraSubtitle").textContent=era.sub;
+ $("banner").style.setProperty("--scene-bg",era.bg);
+ $("character").textContent=`Әдеби бейнең: ${selectedCharacter?selectedCharacter.name:""} · ${eraIndex+1}-ұрпақ: ${era.character}`;
+ age=ev.age;$("age").textContent=`${age} жас`;
+ $("eventCount").textContent=`${eraIndex+1}-дәуір · ${eventIndex+1}/3 оқиға`;
+ $("eventTitle").textContent=ev.title;
+ $("story").textContent=ev.story;
+ $("literaryNote").textContent=ev.note;
+ $("choices").innerHTML="";
+ ev.choices.forEach((choice,i)=>{
+  const b=document.createElement("button");b.className="choice";
+  b.innerHTML=`<span class="choice-letter">${["А","Ә","Б"][i]}</span><span class="choice-text">${choice.text}</span>`;
+  b.addEventListener("click",()=>choose(i));$("choices").appendChild(b);
+ });
+ hide("feedback");hide("nextBtn");answered=false;renderStats();
+}
+function choose(i){
+ if(answered)return;answered=true;
+ const ev=eras[eraIndex].events[eventIndex],choice=ev.choices[i];
+ Object.entries(choice.effect).forEach(([k,v])=>stats[k]=clamp(stats[k]+v));
+ history.push({era:eras[eraIndex].title,event:ev.title,choice:choice.text,outcome:choice.out});
+ [...$("choices").children].forEach((b,j)=>{b.disabled=true;if(j===i)b.style.borderColor="var(--gold)";});
+ const changes=Object.entries(choice.effect).map(([k,v])=>`${statInfo.find(s=>s.key===k).name} ${v>0?"+":""}${v}`).join(" · ");
+ $("feedback").innerHTML=`<strong>ТАҢДАУЫҢНЫҢ САЛДАРЫ</strong><p>${choice.out}</p><div class="delta">${changes}</div>`;
+ show("feedback");show("nextBtn");renderStats();
+ $("nextBtn").textContent=(eventIndex===2&&eraIndex===4)?"Қорытындыны көру →":(eventIndex===2?"Келесі дәуірге өту →":"Келесі оқиға →");
+ $("progress").style.width=((eraIndex*3+eventIndex+1)/15*100)+"%";
+}
+function next(){
+ if(!answered)return;
+ if(eventIndex<2){eventIndex++;render();return;}
+ generationRecords.push({era:eras[eraIndex].title,character:eras[eraIndex].character,stats:{...stats},choices:history.slice(-3)});
+ if(eraIndex<4){
+  // Алдыңғы ұрпақтың тәжірибесі келесі ұрпаққа мұра болып беріледі.
+  const inherited={};
+  statInfo.forEach(s=>inherited[s.key]=Math.round(stats[s.key]*.28));
+  stats={};
+  statInfo.forEach(s=>stats[s.key]=clamp(base[s.key]+inherited[s.key]));
+  eraIndex++;eventIndex=0;render();
+ }else finish();
+}
+function finish(){
+ hide("game");show("results");
+ const e=stats.education,f=stats.freedom,inf=stats.influence,s=stats.support,r=stats.resilience;
+ let title,desc;
+ if(inf>=72&&f>=55){title="Өз үнін тапқан тұлға";desc="Сенің таңдауларың дербес пікір мен қоғамдық ықпалдың маңызын көрсетті. Әулет тарихында өз ойын ашық жеткізу және қоғамға үн қосу дәстүрі күшейді."}
+ else if(inf>=65&&s>=55){title="Қоғамға ықпал еткен көшбасшы";desc="Сен адамдарды ортақ мақсатқа жұмылдырып, қолдау мен жауапкершілікті қатар алып жүрдің. Әулет мұрасы қоғамдық белсенділікпен ерекшеленеді."}
+ else if(s>=68&&r>=60){title="Дәстүр мен жаңашылдықты сабақтастырған тұлға";desc="Сен жақындарыңмен байланысты сақтай отырып, өзгерістерге бейімделдің. Әулет тарихында сабақтастық пен өзара қолдау маңызды орын алды."}
+ else {title="Білім мен өнердің жалғастырушысы";desc="Сен білімге, ізденіске және шығармашылыққа мән бердің. Әулет мұрасы келесі ұрпаққа ой мен тәжірибе қалдыруға бағытталды."}
+ $("resultTitle").textContent=title;$("resultText").textContent=`Бастапқы әдеби кейіпкерің — ${selectedCharacter?selectedCharacter.name:""}. ${desc}`;
+ $("lineage").innerHTML=generationRecords.map((g,i)=>`<div class="generation"><div class="gen-title">${i+1}-ұрпақ · ${g.era}</div><div class="gen-detail">${g.character} осы дәуірдегі үш маңызды шешім арқылы әулет тарихына өз үлесін қосты. Негізгі мұрасы: ${g.choices.map(c=>c.choice.split(" ").slice(0,4).join(" ")).join(" · ")}.</div></div>`).join("");
+ $("legacyText").textContent=`Бес ұрпақтың шешімдері бір-біріне жалғасып, бүгінгі буынның мүмкіндіктерін қалыптастырды. Білім — ${e}/100, еркіндік — ${f}/100, қоғамдық ықпал — ${inf}/100, жақындарының қолдауы — ${s}/100, рухани беріктік — ${r}/100. Бұл сандар — ойын ішіндегі шартты көрсеткіштер.`;
+ $("finalStats").innerHTML=statInfo.map(st=>`<div class="compare-row"><span>${st.name}</span><div class="compare-track"><span style="width:${stats[st.key]}%"></span></div><b>${stats[st.key]}</b></div>`).join("");
+ $("progress").style.width="100%";
+}
+function restart(){
+ resetStatsForCharacter();eraIndex=0;eventIndex=0;age=16;answered=false;history=[];generationRecords=[];
+ hide("results");hide("intro");show("game");render();window.scrollTo({top:0,behavior:"smooth"});
+}
+function startGame(){
+ if(!selectedCharacter)return;
+ resetStatsForCharacter();eraIndex=0;eventIndex=0;age=16;answered=false;history=[];generationRecords=[];
+ hide("intro");show("game");render();window.scrollTo({top:0,behavior:"smooth"});
+}
+$("randomCharacterBtn").addEventListener("click",chooseRandomCharacter);
+$("startBtn").addEventListener("click",startGame);
+$("nextBtn").addEventListener("click",next);
+$("restartTop").addEventListener("click",restart);
+$("againBtn").addEventListener("click",restart);
+$("printBtn").addEventListener("click",()=>window.print());
+</script>
+</body>
+</html>
